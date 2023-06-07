@@ -6,7 +6,7 @@
 	import Container from '@/components/Container.svelte';
 
 	import { prompt } from '@/stores/prompt';
-	import { ImageIcon, HelpCircleIcon } from 'svelte-feather-icons';
+	import { ImageIcon, HelpCircleIcon, DownloadCloudIcon } from 'svelte-feather-icons';
 
 	import { cn } from 'nano-classnames';
 
@@ -33,7 +33,7 @@
 	<Container>
 		<div
 			class={cn('space-y-6 md:max-w-xl md:mx-auto lg:max-w-full lg:grid lg:gap-10 lg:grid-cols-2', [
-				!data.isValid,
+				!data.isValid || (data.credits === 0 && !form?.images),
 				'blur-sm',
 				''
 			])}
@@ -59,8 +59,10 @@
 								class="textarea textarea-block resize-none h-32 w-full block bg-backgroundPrimary/50"
 								bind:value={$prompt}
 								name="prompt"
-								required
 							/>
+							{#if form?.invalidPrompt}
+								<p class="text-red-600 text-sm">Please enter a prompt.</p>
+							{/if}
 						</label>
 						<div class="space-y-2">
 							<p class="text-sm font-medium">No. of images to generate</p>
@@ -136,6 +138,10 @@
 						</button>
 						{#if status === STATUS.ERROR}
 							<p class="text-red-500 text-sm">{error}</p>{/if}
+						{#if form?.invalidCredits}
+							<p class="text-red-500 text-sm">
+								The number of images you're trying to generate exceeds the credit limit.
+							</p>{/if}
 					</form>
 				</div>
 				<div>
@@ -147,42 +153,54 @@
 			</div>
 			<div class="space-y-4">
 				<div
-					class="rounded-xl border-white/10 bg-backgroundSecondary p-4 h-48 lg:h-full border-2 border-dashed"
+					class="rounded-xl border-white/10 bg-backgroundSecondary p-2 h-48 lg:h-full border-2 border-dashed"
 				>
-					<div class="h-full text-content3">
-						{#if !form?.images}
-							<div class="space-y-2 flex flex-col justify-center items-center h-full">
-								<ImageIcon />
-								<p class="text-sm font-medium">Generated renders will appear here...</p>
-							</div>
-						{:else}
-							<ul class="flex gap-2">
-								{#each form.images as img}
-									<li>
-										<img width={512} height={512} alt="" src={img.uri} class="rounded-lg" />
-									</li>
-								{/each}
-							</ul>
-						{/if}
-					</div>
-				</div>
-				{#if !form?.images}
-					<div class="space-y-2">
-						<button class="btn btn-primary btn-block btn-small">Download all</button>
-						<div class="flex gap-x-2">
-							<HelpCircleIcon class="w-6 h-6 text-content3" />
-							<p class="text-content3 text-sm">
-								heroify does not save your generated outputs. Please download your images if you'd
-								like to save them locally!
-							</p>
+					{#if !form?.images}
+						<div class="space-y-2 text-content3 flex flex-col justify-center items-center h-full">
+							<ImageIcon />
+							<p class="text-sm font-medium">Generated renders will appear here...</p>
 						</div>
-					</div>
-				{/if}
+					{:else}
+						<ul class={cn('grid gap-2', [form.images.length > 1, 'grid-cols-2', ''])}>
+							{#each form.images as img}
+								<a
+									href={img.uri}
+									download
+									class="block hover:scale-95 transition duration-300 ease-in-out transform relative group"
+								>
+									<img
+										width={512}
+										height={512}
+										alt=""
+										src={img.uri}
+										class="rounded-lg inline-block"
+									/>
+									<div
+										class="inset-0 pointer-events-none absolute flex items-center justify-center scale-75 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-300 ease-in-out"
+									>
+										<div
+											class="w-20 h-20 flex items-center justify-center rounded-full bg-primary/50"
+										>
+											<DownloadCloudIcon class="w-10 h-10" />
+										</div>
+									</div>
+								</a>
+							{/each}
+						</ul>
+					{/if}
+					{#if form?.images}
+						<div class="flex space-x-2 text-sm text-content3 mt-4">
+							<HelpCircleIcon class="w-4 h-4" />
+
+							<p>Heroify does not save images. Click on images to download them.</p>
+						</div>
+					{/if}
+				</div>
 			</div>
 		</div>
 	</Container>
 
-	{#if !data.isValid}
+	{#if !data.isValid || (data.credits === 0 && !form?.images)}
 		<input class="modal-state" id="modal-3" type="checkbox" checked />
 		<div class="modal">
 			<label class="modal-overlay" />

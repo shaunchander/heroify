@@ -42,6 +42,12 @@ export const actions = {
 				invalidLicense: true
 			};
 		} else {
+			const credits = await getCredits(license);
+			if (credits === 0) {
+				return {
+					invalidLicense: true
+				};
+			}
 			cookies.set('license', license);
 		}
 	},
@@ -66,6 +72,12 @@ export const actions = {
 
 				const credits = await getCredits(license);
 
+				if (!prompt) {
+					return {
+						invalidPrompt: true
+					};
+				}
+
 				if (credits < Number(numImages)) {
 					console.log("Not enough credits. Can't generate image.");
 					return {
@@ -79,7 +91,9 @@ export const actions = {
 							'out of frame, lowres, text, error, cropped, worst quality, low quality, jpeg artifacts, ugly, duplicate, morbid, mutilated, out of frame, extra fingers, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, blurry, dehydrated, bad anatomy, bad proportions, extra limbs, cloned face, disfigured, gross proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck, username, watermark, signature',
 						steps: 50,
 						enhancePrompt: true,
-						numberOfImages: Number(numImages)
+						numberOfImages: Number(numImages),
+						width: 1024,
+						height: 1024
 					});
 					if (!result.error) {
 						console.log('Images generated. Deducting credits...');
