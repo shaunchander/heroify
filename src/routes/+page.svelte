@@ -97,8 +97,10 @@
 								</div>
 								<h2 class="card-header">High quality results</h2>
 								<p class="text-content2">
-									We trained our model on a library of 3D assets and real-world examples, resulting
-									in <span class="text-primary">visually appealing</span> and
+									We use specialized prompts and weightings to achieve <span class="text-primary"
+										>visually appealing</span
+									>
+									and
 									<span class="text-primary">authentic-looking isometric designs</span>.
 								</p>
 							</div>

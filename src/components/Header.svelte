@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Container from '@/components/Container.svelte';
+	import { PUBLIC_CHECKOUT } from '$env/static/public';
 </script>
 
 <header class="sticky top-0 inset-x-0 p-6 space-y-4 backdrop-blur-sm z-50 border-b border-white/10">
@@ -16,7 +17,7 @@
 				>
 			</div>
 			<div>
-				<a class="btn btn-primary">Get Credits</a>
+				<a href={PUBLIC_CHECKOUT} class="btn btn-primary">Get Credits</a>
 			</div>
 		</nav>
 	</Container>

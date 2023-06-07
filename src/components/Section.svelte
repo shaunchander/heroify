@@ -2,6 +2,6 @@
 	export let id: string;
 </script>
 
-<section {id} class="p-6">
+<section {id} class="px-6 py-16">
 	<slot />
 </section>

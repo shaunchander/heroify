@@ -1,31 +1,46 @@
 <script lang="ts">
-	import { scale, blur } from 'svelte/transition';
-	import { PUBLIC_STRIPE_TEST_PRODUCT } from '$env/static/public';
-
+	import { scale } from 'svelte/transition';
+	import { PUBLIC_CHECKOUT, PUBLIC_CHECKOUT_25, PUBLIC_CHECKOUT_50 } from '$env/static/public';
+	import { enhance } from '$app/forms';
 	import Section from '@/components/Section.svelte';
 	import Container from '@/components/Container.svelte';
 
 	import { prompt } from '@/stores/prompt';
-	import { ImageIcon, HelpCircleIcon, XIcon } from 'svelte-feather-icons';
+	import { ImageIcon, HelpCircleIcon } from 'svelte-feather-icons';
 
 	import { cn } from 'nano-classnames';
 
 	export let data;
-	console.log(import.meta.env);
+	export let form;
+
+	enum STATUS {
+		IDLE,
+		LOADING,
+		ERROR
+	}
+
+	let license = '';
+	let images: string[] = [];
+	let numImages = 1;
+
+	let error = '';
+	let status: STATUS = STATUS.IDLE;
+
+	let inferenceId = '';
 </script>
 
 <Section id="generate">
 	<Container>
 		<div
 			class={cn('space-y-6 md:max-w-xl md:mx-auto lg:max-w-full lg:grid lg:gap-10 lg:grid-cols-2', [
-				data.credits,
-				'',
-				'blur-sm'
+				!data.isValid,
+				'blur-sm',
+				''
 			])}
 		>
 			<div class="space-y-2">
 				<div class="space-y-2">
-					<form action="" class="space-y-4">
+					<form method="POST" action="?/prompt" class="space-y-4">
 						<label for="prompt" class="space-y-2">
 							<div class="flex items-center gap-x-2">
 								<span class="text-sm font-medium">Prompt</span>
@@ -42,7 +57,9 @@
 							<textarea
 								id="prompt"
 								class="textarea textarea-block resize-none h-32 w-full block bg-backgroundPrimary/50"
-								value={$prompt}
+								bind:value={$prompt}
+								name="prompt"
+								required
 							/>
 						</label>
 						<div class="space-y-2">
@@ -50,27 +67,36 @@
 							<div class="btn-group btn-group-scrollable">
 								<input
 									type="radio"
-									name="options"
+									name="numImages"
 									data-content="1"
 									class="btn bg-backgroundPrimary/50"
+									bind:group={numImages}
+									value={1}
+									checked
 								/>
 								<input
 									type="radio"
-									name="options"
+									name="numImages"
 									data-content="2"
 									class="btn bg-backgroundPrimary/50"
+									bind:group={numImages}
+									value={2}
 								/>
 								<input
 									type="radio"
-									name="options"
+									name="numImages"
 									data-content="3"
 									class="btn bg-backgroundPrimary/50"
+									bind:group={numImages}
+									value={3}
 								/>
 								<input
 									type="radio"
-									name="options"
+									name="numImages"
 									data-content="4"
 									class="btn bg-backgroundPrimary/50"
+									bind:group={numImages}
+									value={4}
 								/>
 							</div>
 						</div>
@@ -96,69 +122,71 @@
 								class="switch switch-ghost-primary"
 							/>
 						</label>
-						<button class="btn btn-primary btn-lg btn-block">Generate</button>
-						<div class="flex items-center gap-x-2">
-							<div class="flex-1">
-								<button class="btn btn-primary btn-lg btn-block">Get Credits</button>
-							</div>
-							<div class="flex-1">
-								<label class="btn btn-outline-primary btn-lg" for="modal-1">Redeem License</label>
-								<input class="modal-state" id="modal-1" type="checkbox" />
-								<div class="modal">
-									<label class="modal-overlay" for="modal-1" />
-									<div class="modal-content flex flex-col gap-5">
-										<label
-											for="modal-1"
-											class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
-											><XIcon class="w-4 h-4" /></label
-										>
-										<h2 class="text-xl">Enter license</h2>
-										<input class="input input-lg" placeholder="Enter license..." />
-
-										<div class="flex gap-3">
-											<button class="btn btn-primary btn-block">Submit</button>
-
-											<label for="modal-1" class="btn btn-block">Cancel</label>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
+						<button
+							on:click={() => {
+								status = STATUS.LOADING;
+							}}
+							class={cn('btn btn-lg btn-block', [
+								status === STATUS.LOADING,
+								'btn-loading',
+								'btn-primary'
+							])}
+						>
+							Generate ({numImages} credit{numImages > 1 ? 's' : ''})
+						</button>
+						{#if status === STATUS.ERROR}
+							<p class="text-red-500 text-sm">{error}</p>{/if}
 					</form>
 				</div>
 				<div>
-					<!-- <span class="flex items-center gap-2">
-						<span class="dot dot-primary" />
-						<span class="text-sm font-medium"
-							>10 credits remaining (<a href="" class="link link-primary text-xs"
-								>Purchase more credits?</a
-							>)</span
-						>
-					</span> -->
 					<span class="flex items-center gap-2">
-						<span class="dot dot-error" />
-						<span class="text-sm font-medium"
-							>No credits remaining, purchase credits to get started!
-						</span>
+						<span class="dot dot-primary" />
+						<span class="text-sm font-medium">{data.credits ?? 0} credits remaining </span>
 					</span>
 				</div>
 			</div>
-			<div
-				class="rounded-xl border-white/10 bg-backgroundSecondary p-4 h-48 lg:h-full border-2 border-dashed"
-			>
-				<div class="flex items-center justify-center flex-col h-full text-content3">
-					<ImageIcon />
-					<p class="text-sm font-medium">Generated renders will appear here...</p>
+			<div class="space-y-4">
+				<div
+					class="rounded-xl border-white/10 bg-backgroundSecondary p-4 h-48 lg:h-full border-2 border-dashed"
+				>
+					<div class="h-full text-content3">
+						{#if !form?.images}
+							<div class="space-y-2 flex flex-col justify-center items-center h-full">
+								<ImageIcon />
+								<p class="text-sm font-medium">Generated renders will appear here...</p>
+							</div>
+						{:else}
+							<ul class="flex gap-2">
+								{#each form.images as img}
+									<li>
+										<img width={512} height={512} alt="" src={img.uri} class="rounded-lg" />
+									</li>
+								{/each}
+							</ul>
+						{/if}
+					</div>
 				</div>
+				{#if !form?.images}
+					<div class="space-y-2">
+						<button class="btn btn-primary btn-block btn-small">Download all</button>
+						<div class="flex gap-x-2">
+							<HelpCircleIcon class="w-6 h-6 text-content3" />
+							<p class="text-content3 text-sm">
+								heroify does not save your generated outputs. Please download your images if you'd
+								like to save them locally!
+							</p>
+						</div>
+					</div>
+				{/if}
 			</div>
 		</div>
 	</Container>
 
-	{#if !data.credits}
+	{#if !data.isValid}
 		<input class="modal-state" id="modal-3" type="checkbox" checked />
 		<div class="modal">
 			<label class="modal-overlay" />
-			<div intro={true} in:scale={{ delay: 200 }} class="modal-content flex flex-col gap-5">
+			<div intro={true} transition:scale={{ delay: 200 }} class="modal-content flex flex-col gap-5">
 				<div class="space-y-2">
 					<h2 class="text-xl">No credits!</h2>
 					<p>
@@ -169,7 +197,7 @@
 				<ul class="grid gap-2 lg:grid-cols-3">
 					<li>
 						<a
-							href={PUBLIC_STRIPE_TEST_PRODUCT}
+							href={PUBLIC_CHECKOUT}
 							target="_blank"
 							class="flex items-center justify-between lg:flex-col rounded-lg border border-white/10 p-4 hover:border-white/30 transition duration-300"
 						>
@@ -179,7 +207,7 @@
 					</li>
 					<li>
 						<a
-							href="https://buy.stripe.com/28ocOQfHvfD0bxS002"
+							href={PUBLIC_CHECKOUT_25}
 							target="_blank"
 							class="flex items-center justify-between lg:flex-col rounded-lg border border-white/10 p-4 hover:border-white/30 transition duration-300"
 						>
@@ -189,7 +217,7 @@
 					</li>
 					<li>
 						<a
-							href="https://buy.stripe.com/aEU4ik7aZ2Qe45qfZ1"
+							href={PUBLIC_CHECKOUT_50}
 							target="_blank"
 							class="flex items-center justify-between lg:flex-col rounded-lg border border-white/10 p-4 hover:border-white/30 transition duration-300"
 						>
@@ -203,9 +231,21 @@
 				</div>
 				<div class="divider divider-horizontal">OR</div>
 
-				<div class="flex flex-col md:flex-row gap-3">
-					<button class="btn btn-block">Redeem License</button>
-				</div>
+				<form use:enhance method="POST" action="?/license" class="flex flex-col gap-3">
+					<label for="license">
+						<input
+							class="input input-lg input-block font-mono text-center"
+							placeholder="Enter license..."
+							required
+							name="license"
+							id="license"
+							bind:value={license}
+						/>
+					</label>
+					{#if form?.invalidLicense}
+						<p class="text-sm text-red-500">Invalid license.</p>{/if}
+					<button class="btn btn-block" class:btn-primary={license}>Redeem License</button>
+				</form>
 			</div>
 		</div>{/if}
 </Section>
