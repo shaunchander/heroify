@@ -30,8 +30,13 @@
 		name="description"
 		content="Generate 3D graphics for your landing page using AI. Just ask heroify what you're looking for and get high quality graphics for your website."
 	/>
+	<meta property="og:title" content="heroify" />
+	<meta property="og:site_name" content="heroify" />
+	<meta property="og:url" content="https://heroify.lol" />
+	<meta property="og:type" content="website" />
+	<meta property="og:image" content="https://heroify.lol/og.png" />
 	<meta
-		name="og:description"
+		property="og:description"
 		content="Generate 3D graphics for your landing page using AI. Just ask heroify what you're looking for and get high quality graphics for your website."
 	/>
 </svelte:head>
