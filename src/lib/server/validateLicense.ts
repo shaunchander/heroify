@@ -10,13 +10,19 @@ export const validateLicense = async (license: string | undefined) => {
 	}
 
 	try {
-		const data = await pb
-			.collection('licenses')
-			.getFirstListItem<LicensesResponse>(`license="${license}"`);
-		if (data.credits >= 0) {
-			return true;
-		} else {
+		const data = await fetch('https://api.lemonsqueezy.com/v1/licenses/activate', {
+			method: 'POST',
+			body: JSON.stringify({ license_key: license, instance_name: 'heroify' }),
+			headers: {
+				'Content-Type': 'application/json',
+				Accept: 'application/json'
+			}
+		});
+		const json = await data.json();
+		if (!json.activated) {
 			return false;
+		} else {
+			return true;
 		}
 	} catch (err) {
 		return false;

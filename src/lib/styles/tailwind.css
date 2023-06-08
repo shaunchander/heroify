@@ -10,7 +10,7 @@
 
 @layer components {
 	h1 {
-		@apply text-4xl font-black;
+		@apply text-4xl font-black lg:text-5xl;
 	}
 
 	h2 {

@@ -1,17 +1,39 @@
-import { LEAP_API_KEY } from '$env/static/private';
-export async function GET({ params }) {
+import { addImagesToPb } from '$lib/server/addImagesToPb.js';
+import { leap } from '$lib/server/leap';
+import { setFailed } from '$lib/server/setFailed.js';
+import { json } from '@sveltejs/kit';
+
+export async function GET({ params, cookies }) {
 	const { inferenceId } = params;
 
-	const url = `https://api.tryleap.ai/api/v1/images/models/aa180b1a-6b98-413c-92e6-d3a198dce8dd/inferences/${inferenceId}`;
-	const options = {
-		method: 'GET',
-		headers: {
-			accept: 'application/json',
-			authorization: `Bearer ${LEAP_API_KEY}}`
-		}
-	};
+	const license = cookies.get('license');
+	if (!license) {
+		return json({ error: true });
+	}
 
-	const data = await fetch(url, options);
-	const json = await data.json();
-	return new Response(json, { status: 200 });
+	try {
+		const result = await leap.generate.getInferenceJob({
+			inferenceId: inferenceId,
+			modelId: '1e7737d7-545e-469f-857f-e4b46eaa151d'
+		});
+		const data = await result.data;
+		if (data) {
+			if (data.state === 'failed') {
+				await setFailed(license, data.id, data.numberOfImages);
+				return new Response('Bad request.', { status: 400 });
+			} else if (data.state === 'finished') {
+				await addImagesToPb(
+					data.images.map((image) => image.uri),
+					data.id
+				);
+				return new Response('OK', { status: 201 });
+			} else {
+				return new Response('Processing...', { status: 200 });
+			}
+		} else {
+			return new Response('Bad request.', { status: 400 });
+		}
+	} catch (err) {
+		return new Response('Bad request.', { status: 400 });
+	}
 }

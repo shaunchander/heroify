@@ -1,9 +1,9 @@
 <script lang="ts">
-	import Section from '@/components/Section.svelte';
-	import Container from '@/components/Container.svelte';
+	import Section from '$lib/components/Section.svelte';
+	import Container from '$lib/components/Container.svelte';
 	import { EyeIcon, ZapIcon, BriefcaseIcon, StarIcon } from 'svelte-feather-icons';
 
-	import { prompt } from '@/stores/prompt';
+	import { prompt } from '$lib/stores/prompt';
 </script>
 
 <Section id="hero">

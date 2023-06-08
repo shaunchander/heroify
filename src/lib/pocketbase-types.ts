@@ -4,6 +4,7 @@
 
 export enum Collections {
 	Licenses = "licenses",
+	Prompts = "prompts",
 }
 
 // Alias types for improved usability
@@ -32,18 +33,31 @@ export type AuthSystemFields<T = never> = {
 
 export type LicensesRecord = {
 	license: string
-	credits: number
+	credits?: number
+}
+
+export type PromptsRecord<Timages = unknown> = {
+	prompt: string
+	images?: null | Timages
+	license?: string
+	status?: boolean
+	inferenceId?: string
+	numImages?: number
+	isFailed?: boolean
 }
 
 // Response types include system fields and match responses from the PocketBase API
 export type LicensesResponse = Required<LicensesRecord> & BaseSystemFields
+export type PromptsResponse<Timages = unknown> = Required<PromptsRecord<Timages>> & BaseSystemFields
 
 // Types containing all Records and Responses, useful for creating typing helper functions
 
 export type CollectionRecords = {
 	licenses: LicensesRecord
+	prompts: PromptsRecord
 }
 
 export type CollectionResponses = {
 	licenses: LicensesResponse
+	prompts: PromptsResponse
 }

@@ -1,9 +1,9 @@
 <script lang="ts">
-	import Container from '@/components/Container.svelte';
+	import Container from '$lib/components/Container.svelte';
 	import { PUBLIC_CHECKOUT } from '$env/static/public';
 </script>
 
-<header class="sticky top-0 inset-x-0 p-6 space-y-4 backdrop-blur-sm z-50 border-b border-white/10">
+<header class="sticky top-0 inset-x-0 p-6 space-y-4 backdrop-blur-sm z-50">
 	<Container>
 		<nav class="flex justify-between items-center">
 			<div>
@@ -11,7 +11,7 @@
 					<div
 						class="w-8 h-8 rounded-sm bg-gradient-to-br from-primary to-blue-700 flex items-center justify-center pointer-events-none select-none"
 					>
-						<p class="font-black">h</p>
+						<p class="font-black font-panchang">h</p>
 					</div>
 					<p class="font-black text-lg">heroify</p></a
 				>

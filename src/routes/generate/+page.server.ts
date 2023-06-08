@@ -1,11 +1,10 @@
-import { LEAP_API_KEY } from '$env/static/private';
-import { deductCredits } from '@/lib/server/deductCredits.js';
-import { getCredits } from '@/lib/server/getCredits';
-import { validateLicense } from '@/lib/server/validateLicense';
-import { Leap } from '@leap-ai/sdk';
-
-const leap = new Leap(LEAP_API_KEY);
-leap.useModel('1e7737d7-545e-469f-857f-e4b46eaa151d');
+import { addLicenseToPb } from '$lib/server/addLicenseToPb';
+import { getCredits } from '$lib/server/getCredits';
+import { validateLicense } from '$lib/server/validateLicense';
+import { leap } from '$lib/server/leap';
+import { getPrompts } from '$lib/server/getPrompts';
+import { addPromptToPb } from '$lib/server/addPromptToPb.js';
+import { deductCredits } from '$lib/server/deductCredits.js';
 
 export async function load({ cookies }) {
 	const license = cookies.get('license');
@@ -18,7 +17,16 @@ export async function load({ cookies }) {
 			};
 		} else {
 			const credits = await getCredits(license);
+			const prompts = await getPrompts(license);
+			if (prompts) {
+				prompts.reverse();
 
+				return {
+					isValid,
+					credits,
+					prompts
+				};
+			}
 			return {
 				isValid,
 				credits
@@ -35,20 +43,29 @@ export const actions = {
 	license: async ({ cookies, request }) => {
 		const data = await request.formData();
 		const license = (data.get('license') as string) ?? '';
-		const isValid = await validateLicense(license);
 
-		if (!isValid) {
+		if (!license) {
 			return {
 				invalidLicense: true
 			};
 		} else {
-			const credits = await getCredits(license);
-			if (credits === 0) {
+			const data = await fetch('https://api.lemonsqueezy.com/v1/licenses/activate', {
+				method: 'POST',
+				body: JSON.stringify({ license_key: license, instance_name: 'heroify' }),
+				headers: {
+					'Content-Type': 'application/json',
+					Accept: 'application/json'
+				}
+			});
+			const json = await data.json();
+			if (!json.activated) {
 				return {
 					invalidLicense: true
 				};
+			} else {
+				await addLicenseToPb(license, json.meta.variant_name);
+				cookies.set('license', license);
 			}
-			cookies.set('license', license);
 		}
 	},
 	prompt: async ({ request, cookies }) => {
@@ -85,28 +102,25 @@ export const actions = {
 					};
 				} else {
 					console.log('Generating image...');
-					const result = await leap.generate.generateImage({
-						prompt: `(${prompt}), (((2d vector design style))), (((isometric style))), tiny, cute, soft lighting, soft pastel colors, pastel background, matte, soft gradient, low polygon count`,
+					const result = await leap.generate.createInferenceJob({
+						prompt: `(${prompt}), (((2d isometric vector design style))), tiny, cute, soft lighting, soft pastel colors, pastel background, matte, soft gradient, low polygon count`,
 						negativePrompt:
 							'out of frame, lowres, text, error, cropped, worst quality, low quality, jpeg artifacts, ugly, duplicate, morbid, mutilated, out of frame, extra fingers, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, blurry, dehydrated, bad anatomy, bad proportions, extra limbs, cloned face, disfigured, gross proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck, username, watermark, signature',
-						steps: 50,
+						steps: 30,
 						enhancePrompt: true,
 						numberOfImages: Number(numImages),
-						width: 1024,
-						height: 1024
+						width: 512,
+						height: 512,
+						upscaleBy: 'x2'
 					});
-					if (!result.error) {
-						console.log('Images generated. Deducting credits...');
+					console.log('Image queued. Adding to DB...');
+					const data = await result.data;
+					if (data) {
+						await addPromptToPb(prompt, license, data.id, Number(numImages));
 						await deductCredits(license, Number(numImages));
-						console.log('Credits deducted');
-
-						return {
-							images: result.data?.images
-						};
 					} else {
-						console.log(result.error);
 						return {
-							error: result.error
+							leapError: true
 						};
 					}
 				}
