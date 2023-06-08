@@ -6,6 +6,11 @@
 	import { prompt } from '$lib/stores/prompt';
 </script>
 
+<svelte:head
+	>"
+	<meta property="og:url" value="https://heroify.app" />
+</svelte:head>
+
 <Section id="hero">
 	<Container>
 		<div class="space-y-8 md:space-y-0 md:grid md:grid-cols-2 md:gap-5 lg:gap-10">
