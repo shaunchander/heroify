@@ -11,8 +11,12 @@ export const addLicenseToPb = async (license: string, variant: string) => {
 		'25 Credits': 25,
 		'50 Credits': 50
 	};
-	await pb.collection('licenses').create<LicensesRecord>({
-		license,
-		credits: credits[variant as keyof typeof credits]
-	});
+	try {
+		await pb.collection('licenses').create<LicensesRecord>({
+			license,
+			credits: credits[variant as keyof typeof credits]
+		});
+	} catch (err) {
+		console.log(err);
+	}
 };
