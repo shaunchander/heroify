@@ -49,7 +49,7 @@ export const actions = {
 				invalidLicense: true
 			};
 		} else {
-			const data = await fetch('https://api.lemonsqueezy.com/v1/licenses/activate', {
+			const data = await fetch('https://api.lemonsqueezy.com/v1/licenses/validate', {
 				method: 'POST',
 				body: JSON.stringify({ license_key: license, instance_name: 'heroify' }),
 				headers: {
