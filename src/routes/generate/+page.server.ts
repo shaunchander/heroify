@@ -58,7 +58,7 @@ export const actions = {
 				}
 			});
 			const json = await data.json();
-			if (!json.activated) {
+			if (!json.valid) {
 				return {
 					invalidLicense: true
 				};
