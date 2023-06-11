@@ -39,6 +39,8 @@
 		property="og:description"
 		content="Generate 3D graphics for your landing page using AI. Just ask heroify what you're looking for and get high quality graphics for your website."
 	/>
+	<meta name="twitter:card" content="summary_large_image" />
+
 	<script
 		async
 		src="https://umami.services.shaunchander.me/script.js"
