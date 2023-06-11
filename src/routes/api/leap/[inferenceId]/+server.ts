@@ -1,13 +1,9 @@
-import { CLIPDROP_KEY } from '$env/static/private';
 import { addBgStatustoPb } from '$lib/server/addBgStatusToPb.js';
 import { addImagesToPb } from '$lib/server/addImagesToPb.js';
-import { blobToBase64 } from '$lib/server/blobToBase64.js';
 import { getPrompt } from '$lib/server/getPrompt.js';
 import { leap } from '$lib/server/leap';
 import { setFailed } from '$lib/server/setFailed.js';
 import { json } from '@sveltejs/kit';
-import { cloudinary } from '$lib/server/cloudinary';
-import { pixelbin } from '$lib/server/pixelbin.js';
 
 export async function GET({ params, cookies }) {
 	const { inferenceId } = params;
@@ -62,15 +58,14 @@ export async function GET({ params, cookies }) {
 							// 	console.log(cloudinaryResult);
 							// 	console.log('Uploading complete! Returning image...');
 							// 	await addBgStatustoPb(data.id, false);
-
 							// 	images.push(cloudinaryResult.url);
 							// }
-							console.log('Uploading to PixelBin...');
-							await pixelbin.urlUpload({
-								url: image.uri,
-								filenameOverride: true
-							});
-							console.log('Upload complete! Applying transformations...');
+							// console.log('Uploading to PixelBin...');
+							// await pixelbin.urlUpload({
+							// 	url: image.uri,
+							// 	filenameOverride: true
+							// });
+							// console.log('Upload complete! Applying transformations...');
 						}
 						await addImagesToPb(images, data.id);
 						return new Response('OK', { status: 201 });
