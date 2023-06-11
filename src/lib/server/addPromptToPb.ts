@@ -8,12 +8,14 @@ export const addPromptToPb = async (
 	prompt: string,
 	license: string,
 	inferenceId: string,
-	numImages: number
+	numImages: number,
+	removeBg: boolean
 ) => {
 	await pb.collection('prompts').create<PromptsRecord>({
 		prompt,
 		license,
 		inferenceId,
-		numImages
+		numImages,
+		removeBg
 	});
 };

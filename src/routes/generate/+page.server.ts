@@ -116,8 +116,9 @@ export const actions = {
 					console.log('Image queued. Adding to DB...');
 					const data = await result.data;
 					if (data) {
-						await addPromptToPb(prompt, license, data.id, Number(numImages));
+						await addPromptToPb(prompt, license, data.id, Number(numImages), removeBg === 'on');
 						await deductCredits(license, Number(numImages));
+						console.log('Prompt added to DB!');
 					} else {
 						return {
 							leapError: true

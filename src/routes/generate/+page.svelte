@@ -22,8 +22,8 @@
 	}
 
 	let license = '';
-	let images: string[] = [];
 	let numImages = 1;
+	let showModal = false;
 
 	let error = '';
 	let status: STATUS = STATUS.IDLE;
@@ -54,7 +54,7 @@
 
 		const link = document.createElement('a');
 		link.href = imageURL;
-		link.download = 'image file name here';
+		link.download = 'heroify';
 		document.body.appendChild(link);
 		link.click();
 		document.body.removeChild(link);
@@ -150,19 +150,11 @@
 									<label class="popover-trigger"><HelpCircleIcon class="w-4 h-4" /></label>
 									<div class="popover-content popover-bottom-center lg:popover-right">
 										<div class="popover-arrow" />
-										<div class="p-4 text-sm">
-											Removes the background gradients from the generated renders, giving you a
-											transparent PNG.
-										</div>
+										<div class="p-4 text-sm">Background removals are coming soon!</div>
 									</div>
 								</div>
 							</div>
-							<input
-								id="background"
-								name="background"
-								type="checkbox"
-								class="switch switch-ghost-primary"
-							/>
+							<input id="background" name="removeBg" type="checkbox" class="switch" disabled />
 						</label>
 						<button
 							on:click={() => {
@@ -180,7 +172,8 @@
 							<p class="text-red-500 text-sm">{error}</p>{/if}
 						{#if form?.invalidCredits}
 							<p class="text-red-500 text-sm">
-								The number of images you're trying to generate exceeds your credit limit.
+								The number of images you're trying to generate exceeds your credit limit. To
+								continue using heroify, please purchase more credits.
 							</p>{/if}
 					</form>
 				</div>
@@ -190,6 +183,10 @@
 						<span class="text-sm font-medium"
 							>You have <strong>{data.credits ?? 0} credits</strong> remaining
 						</span>
+						{#if data.credits === 0}<button
+								on:click={() => (showModal = true)}
+								class="text-sm text-primary font-bold">Redeem new license?</button
+							>{/if}
 					</span>
 				</div>
 			</div>
@@ -201,25 +198,27 @@
 						{#each data.prompts as prompt}
 							<div class="space-y-2 pt-2">
 								<div class="flex items-center gap-x-2 justify-between">
-									<div>
-										<p class="font-medium text-content2 whitespace-nowrap text-ellipsis">
+									<div class="flex-1">
+										<p class="font-medium text-sm text-content2">
 											{prompt.prompt}
 										</p>
 									</div>
-									{#if !prompt.status}
-										<span class="badge badge-outline space-x-1">
-											<div class="spinner-circle spinner-xs spinner-primary" />
-											<span>Generating</span>
-										</span>
-									{:else if prompt.isFailed}
-										<div class="flex items-center gap-x-1">
-											<span class="badge badge-flat-error">
-												<span>Failed</span>
+									<div class="w-auto">
+										{#if !prompt.status}
+											<span class="badge badge-outline space-x-1">
+												<div class="spinner-circle spinner-xs spinner-primary" />
+												<span class="text-xs">Generating</span>
 											</span>
-										</div>
-									{:else}
-										<span class="badge badge-flat-success">Completed</span>
-									{/if}
+										{:else if prompt.isFailed}
+											<div class="flex items-center gap-x-1">
+												<span class="badge badge-flat-error">
+													<span>Failed</span>
+												</span>
+											</div>
+										{:else}
+											<span class="badge badge-flat-success">Completed</span>
+										{/if}
+									</div>
 								</div>
 								<ul class="gap-x-1 grid grid-cols-4">
 									{#if !prompt.status}
@@ -250,13 +249,13 @@
 						</div>
 					{/if}
 				</div>
-				{#if data.prompts}
+				{#if data.prompts && data.prompts.length > 0}
 					<div class="flex items-center gap-x-1">
 						<div>
 							<HelpCircleIcon class="w-4 h-4 text-content3" />
 						</div>
 						<div>
-							<p class="text-xs text-content3">Click on renders to download them</p>
+							<p class="text-xs text-content3">Click on images to download them</p>
 						</div>
 					</div>
 				{/if}
@@ -264,7 +263,7 @@
 		</div>
 	</Container>
 
-	{#if !data.isValid}
+	{#if !data.isValid || showModal}
 		<input class="modal-state" id="modal-3" type="checkbox" checked />
 		<div class="modal">
 			<label class="modal-overlay" />
