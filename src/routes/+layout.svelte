@@ -39,6 +39,11 @@
 		property="og:description"
 		content="Generate 3D graphics for your landing page using AI. Just ask heroify what you're looking for and get high quality graphics for your website."
 	/>
+	<script
+		async
+		src="https://umami.services.shaunchander.me/script.js"
+		data-website-id="2b83b204-2f0d-42aa-911d-e92409683ce3"
+	></script>
 </svelte:head>
 
 <Header />
