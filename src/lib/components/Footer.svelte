@@ -15,9 +15,8 @@
 						>
 					</li>
 					<li>
-						<a
-							class="link link-primary text-sm font-semibold"
-							href="mailto:shaunchander+heroify@gmail.com">Contact</a
+						<a class="link link-primary text-sm font-semibold" href="mailto:heroify@shaunchander.me"
+							>Contact</a
 						>
 					</li>
 				</ul>
