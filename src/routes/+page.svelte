@@ -10,6 +10,19 @@
 	<Container>
 		<div class="space-y-8 md:space-y-0 md:grid md:grid-cols-2 md:gap-5 lg:gap-10">
 			<div>
+				<div class="mb-4">
+					<a
+						href="https://www.producthunt.com/posts/heroify?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-heroify"
+						target="_blank"
+						><img
+							src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=399027&theme=dark"
+							alt="heroify - 3D&#0032;graphics&#0032;for&#0032;your&#0032;website&#0044;&#0032;generated&#0032;by&#0032;AI | Product Hunt"
+							style="width: 250px; height: 54px;"
+							width="250"
+							height="54"
+						/></a
+					>
+				</div>
 				<h1>
 					3D graphics for your website, <span
 						class="text-white inline-block bg-primary rounded-sm p-1 transform rotate-[-2deg] translate-y-2"
