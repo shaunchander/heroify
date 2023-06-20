@@ -7,7 +7,7 @@
 	import Container from '$lib/components/Container.svelte';
 
 	import { prompt } from '$lib/stores/prompt';
-	import { ImageIcon, HelpCircleIcon, DownloadCloudIcon } from 'svelte-feather-icons';
+	import { ImageIcon, HelpCircleIcon, DownloadCloudIcon, ZoomInIcon } from 'svelte-feather-icons';
 
 	import { cn } from 'nano-classnames';
 	import { invalidateAll } from '$app/navigation';
@@ -24,6 +24,7 @@
 	let license = '';
 	let numImages = 1;
 	let showModal = false;
+	let zoomIn = '';
 
 	let error = '';
 	let status: STATUS = STATUS.IDLE;
@@ -229,13 +230,32 @@
 										{/each}
 									{:else}
 										{#each prompt.images as img}
-											<li class="w-full">
-												<button
-													class="block hover:scale-95 transition duration-300 ease-in-out transform"
-													on:click|preventDefault={() => handleDownload(img)}
+											<li class="w-full relative group">
+												<div
+													class="absolute top-1 right-1 lg:opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition duration-300 ease-in-out overflow-hidden focus-within:opacity-100"
 												>
-													<img src={img} class="aspect-square w-full rounded-lg" alt="" /></button
-												>
+													<ul class="flex items-center gap-x-2 p-1 bg-primary/60 rounded-full">
+														<li
+															class="transform lg:-translate-y-4 group-hover:translate-y-0 group-active:translate-y-0 focus-within:translate-y-0 delay-75 duration-300 ease-in-out"
+														>
+															<button
+																on:click|preventDefault={() => {
+																	zoomIn = img;
+																}}
+															>
+																<ZoomInIcon class="w-4 h-4" />
+															</button>
+														</li>
+														<li
+															class="transform lg:-translate-y-4 group-hover:translate-y-0 group-active:translate-y-0 focus-within:translate-y-0 delay-100 duration-300 ease-in-out"
+														>
+															<button on:click|preventDefault={() => handleDownload(img)}>
+																<DownloadCloudIcon class="w-4 h-4" />
+															</button>
+														</li>
+													</ul>
+												</div>
+												<img src={img} class="aspect-square w-full rounded-lg" alt="" />
 											</li>
 										{/each}
 									{/if}
@@ -262,6 +282,37 @@
 			</div>
 		</div>
 	</Container>
+
+	{#if zoomIn}
+		<div class="bg-black/60 fixed inset-0 flex items-center justify-center">
+			<div transition:scale class="relative">
+				<img src={zoomIn} alt="" class="w-10/12 max-w-2xl mx-auto aspect-auto rounded-2xl" />
+				<div class="absolute -top-8 right-0">
+					<button
+						on:click|preventDefault={() => {
+							zoomIn = '';
+						}}
+						class="btn btn-circle"
+					>
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							class="h-6 w-6"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke="currentColor"
+						>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M6 18L18 6M6 6l12 12"
+							/>
+						</svg>
+					</button>
+				</div>
+			</div>
+		</div>
+	{/if}
 
 	{#if !data.isValid || showModal}
 		<input class="modal-state" id="modal-3" type="checkbox" checked />
